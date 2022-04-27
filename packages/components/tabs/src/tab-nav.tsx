@@ -1,10 +1,12 @@
 import {
   computed,
   defineComponent,
+  getCurrentInstance,
   inject,
   onMounted,
   onUpdated,
   ref,
+  toRef,
   watch,
 } from 'vue'
 import { NOOP } from '@vue/shared'
@@ -70,7 +72,9 @@ const TabNav = defineComponent({
   name: COMPONENT_NAME,
   props: tabNavProps,
 
-  setup(props, { expose }) {
+  setup(props, { expose, slots }) {
+    const vm = getCurrentInstance()!
+
     const rootTabs = inject(tabsRootContextKey)
     if (!rootTabs) throwError(COMPONENT_NAME, `<el-tabs><tab-nav /></el-tabs>`)
 
@@ -266,6 +270,12 @@ const TabNav = defineComponent({
       removeFocus,
     })
 
+    watch(
+      () => props.panes,
+      () => vm.update(),
+      { flush: 'post' }
+    )
+
     return () => {
       const scrollBtn = scrollable.value
         ? [
@@ -302,15 +312,13 @@ const TabNav = defineComponent({
         const btnClose = closable ? (
           <ElIcon
             class="is-icon-close"
-            // @ts-expect-error native event
             onClick={(ev: MouseEvent) => props.onTabRemove(pane, ev)}
           >
             <Close />
           </ElIcon>
         ) : null
 
-        const tabLabelContent =
-          pane.instance.slots.label?.() || pane.props.label
+        const tabLabelContent = pane.slots.label?.() || pane.props.label
         const tabindex = pane.active ? 0 : -1
 
         return (
