@@ -9,7 +9,7 @@
   <div style="margin: 20px 0" />
   <el-input
     v-model="textarea"
-    maxlength="30"
+    maxlength="200"
     placeholder="Please input"
     show-word-limit
     type="textarea"
